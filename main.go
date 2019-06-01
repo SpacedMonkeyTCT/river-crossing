@@ -161,15 +161,13 @@ func main() {
 			s = previousMoves[len(previousMoves)-1]
 		} else {
 			s = ns[rand.Intn(len(ns))]
-			s.display()
 			previousMoves = append(previousMoves, s)
 		}
 	}
 
-	fmt.Println()
-	fmt.Println("SOLUTION FOUND!")
-
+	fmt.Println("Solution found!")
 	for _, s := range previousMoves {
 		s.display()
 	}
+	fmt.Println(len(previousMoves), "moves")
 }
