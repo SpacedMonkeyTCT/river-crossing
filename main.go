@@ -154,16 +154,11 @@ func main() {
 			ns = append(ns, m)
 		}
 		// if there are no moves, we must have made a wrong choice in the past
-		// rollback history until we find a state we've seen before
+		// mark our current state as bad and rollback history
 		if len(ns) == 0 {
 			badMoves = append(badMoves, s)
-			for i := len(previousMoves) - 2; i > 0; i-- {
-				previousMoves = previousMoves[:len(previousMoves)-1]
-				if previousMoves[i].inHistory(pm) {
-					s = previousMoves[i]
-					break
-				}
-			}
+			previousMoves = previousMoves[:len(previousMoves)-1]
+			s = previousMoves[len(previousMoves)-1]
 		} else {
 			s = ns[rand.Intn(len(ns))]
 			s.display()
