@@ -136,29 +136,27 @@ func main() {
 		ns := []state{}
 
 		for _, m := range pm {
-			if fox.eats(goose, m) {
+			switch {
+			case fox.eats(goose, m):
 				continue
-			}
-			if goose.eats(bean, m) {
+			case goose.eats(bean, m):
 				continue
-			}
-			if m.boatSinks() {
+			case m.boatSinks():
 				continue
-			}
-			if m.inHistory(badMoves) {
+			case m.inHistory(badMoves):
 				continue
-			}
-			if m.inHistory(previousMoves) {
+			case m.inHistory(previousMoves):
 				continue
+			default:
+				ns = append(ns, m)
 			}
-			ns = append(ns, m)
 		}
 		// if there are no moves, we must have made a wrong choice in the past
 		// mark our current state as bad and rollback history
 		if len(ns) == 0 {
 			badMoves = append(badMoves, s)
+			s = previousMoves[len(previousMoves)-2]
 			previousMoves = previousMoves[:len(previousMoves)-1]
-			s = previousMoves[len(previousMoves)-1]
 		} else {
 			s = ns[rand.Intn(len(ns))]
 			previousMoves = append(previousMoves, s)
