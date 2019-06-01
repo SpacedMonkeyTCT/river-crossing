@@ -1,6 +1,11 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"math/rand"
+	"reflect"
+	"time"
+)
 
 type char int
 
@@ -58,7 +63,7 @@ func (s state) display() {
 		}
 	}
 
-	fmt.Printf("left : %v\n", l)
+	fmt.Printf("\nleft : %v\n", l)
 	fmt.Printf("boat : %v\n", b)
 	fmt.Printf("right: %v\n", r)
 }
@@ -97,8 +102,79 @@ func (s state) generateMoves() []state {
 	return ns
 }
 
-func main() {
-	history := []state{{left, left, left, left}}
+func (s state) inHistory(history []state) bool {
+	for _, h := range history {
+		if reflect.DeepEqual(s, h) {
+			return true
+		}
+	}
+	return false
+}
 
-	history[0].display()
+func (s state) boatSinks() bool {
+	c := 0
+	for _, p := range s {
+		if p == boat {
+			c++
+		}
+	}
+	if c > 2 {
+		return true
+	}
+	return false
+}
+
+func main() {
+	s := state{left, left, left, left}
+	end := state{right, right, right, right}
+	badMoves := []state{}
+	previousMoves := []state{s}
+	rand.Seed(time.Now().Unix())
+
+	for !reflect.DeepEqual(s, end) {
+		pm := s.generateMoves()
+		ns := []state{}
+
+		for _, m := range pm {
+			if fox.eats(goose, m) {
+				continue
+			}
+			if goose.eats(bean, m) {
+				continue
+			}
+			if m.boatSinks() {
+				continue
+			}
+			if m.inHistory(badMoves) {
+				continue
+			}
+			if m.inHistory(previousMoves) {
+				continue
+			}
+			ns = append(ns, m)
+		}
+		// if there are no moves, we must have made a wrong choice in the past
+		// rollback history until we find a state we've seen before
+		if len(ns) == 0 {
+			badMoves = append(badMoves, s)
+			for i := len(previousMoves) - 2; i > 0; i-- {
+				previousMoves = previousMoves[:len(previousMoves)-1]
+				if previousMoves[i].inHistory(pm) {
+					s = previousMoves[i]
+					break
+				}
+			}
+		} else {
+			s = ns[rand.Intn(len(ns))]
+			s.display()
+			previousMoves = append(previousMoves, s)
+		}
+	}
+
+	fmt.Println()
+	fmt.Println("SOLUTION FOUND!")
+
+	for _, s := range previousMoves {
+		s.display()
+	}
 }
